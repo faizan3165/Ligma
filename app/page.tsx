@@ -1,8 +1,13 @@
+"use client";
+
+import Live from "@/components/Live";
 
 const Home = () => {
   return (
-    <h1>HALU</h1>
-    )
-}
+    <div>
+      <Live />
+    </div>
+  );
+};
 
-export default Home
+export default Home;
