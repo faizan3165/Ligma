@@ -23,12 +23,14 @@ import {
 } from "@/lib/canvas";
 
 import { ActiveElement } from "@/types/type";
+import { handleImageUpload } from "@/lib/shapes";
 
 const Home = () => {
   const undo = useUndo();
   const redo = useRedo();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const fabricRef = useRef<fabric.Canvas | null>(null);
   const shapeRef = useRef<fabric.Object | null>(null);
   const selectedShapeRef = useRef<string | null>("null");
@@ -88,6 +90,16 @@ const Home = () => {
       case "delete":
         handleDelete(fabricRef.current as any, deleteShapeFromStorage);
         setActiveElement(defaultNavElement);
+
+        break;
+
+      case "image":
+        imageInputRef?.current?.click();
+        isDrawing.current = false;
+
+        if (fabricRef.current) {
+          fabricRef.current.isDrawingMode = false;
+        }
 
         break;
 
@@ -174,6 +186,16 @@ const Home = () => {
       <Navbar
         activeElement={activeElement}
         handleActiveElement={handleActiveElement}
+        imageInputRef={imageInputRef}
+        handleImageUpload={(e: any) => {
+          e.stopPropagation();
+          handleImageUpload({
+            file: e.target.files[0],
+            canvas: fabricRef as any,
+            shapeRef,
+            syncShapeInStorage,
+          });
+        }}
       />
 
       <section className="flex h-full flex-row">
