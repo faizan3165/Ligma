@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
-import { useMutation, useStorage } from "@/liveblocks.config";
+import { useMutation, useRedo, useStorage, useUndo } from "@/liveblocks.config";
 
 import LeftSidebar from "@/components/LeftSidebar";
 import Live from "@/components/Live";
@@ -10,7 +10,7 @@ import Navbar from "@/components/Navbar";
 import RightSidebar from "@/components/RightSidebar";
 
 import { defaultNavElement } from "@/constants";
-import { handleDelete } from "@/lib/key-events";
+import { handleDelete, handleKeyDown } from "@/lib/key-events";
 
 import {
   handleCanvasMouseDown,
@@ -25,10 +25,13 @@ import {
 import { ActiveElement } from "@/types/type";
 
 const Home = () => {
+  const undo = useUndo();
+  const redo = useRedo();
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<fabric.Canvas | null>(null);
   const shapeRef = useRef<fabric.Object | null>(null);
-  const selectedShapeRef = useRef<string | null>("triangle");
+  const selectedShapeRef = useRef<string | null>("null");
   const activeObjectRef = useRef<fabric.Object | null>(null);
   const isDrawing = useRef(false);
 
@@ -142,6 +145,17 @@ const Home = () => {
       handleResize({ fabricRef });
     });
 
+    window.addEventListener("keydown", (e) => {
+      handleKeyDown({
+        e,
+        canvas: fabricRef.current,
+        undo,
+        redo,
+        syncShapeInStorage,
+        deleteShapeFromStorage,
+      });
+    });
+
     return () => {
       canvas.dispose();
     };
@@ -163,7 +177,7 @@ const Home = () => {
       />
 
       <section className="flex h-full flex-row">
-        <LeftSidebar />
+        <LeftSidebar allShapes={Array.from(canvasObjects)} />
 
         <Live canvasRef={canvasRef} />
 
